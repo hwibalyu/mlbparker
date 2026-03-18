@@ -90,8 +90,6 @@
 ├── sidepanel.html
 ├── sidepanel.js
 ├── icons/
-├── STORE_DESCRIPTION.md
-├── STORE_REGISTRATION_GUIDE.md
 └── README.md
 ```
 

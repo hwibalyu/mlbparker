@@ -1,0 +1,4 @@
+.DS_Store
+
+# Packaged or backup artifacts
+*.zip
