@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>엠팍커(MLBParker)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Inter', sans-serif;
+      background: #f8f9fa;
+      overflow: hidden;
+    }
+
+    #header {
+      padding: 12px 16px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #profile-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #eee;
+      border: 1px solid #eaeaea;
+    }
+
+    #profile-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    #profile-nickname {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    #profile-date {
+      font-size: 12px;
+      color: #888;
+      display: flex;
+      align-items: center;
+    }
+
+    #tag-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 4px 0;
+    }
+
+    .tag-pill {
+      background: #f1f3f4;
+      color: #5f6368;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .tag-pill:hover {
+      background: #e8eaed;
+      border-color: #dadce0;
+    }
+
+    .tag-pill.active {
+      background: #1a73e8;
+      color: #fff;
+      border-color: #1a73e8;
+      box-shadow: 0 1px 2px rgba(26,115,232,0.2);
+    }
+
+    /* 목록 + 페이지네이션을 위한 스크롤 컨테이너 */
+    #scroll-container {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* 게시글 목록 컨테이너 */
+    #post-list {
+      width: 100%;
+      background: #fff;
+    }
+
+    /* 로딩 상태 */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100px;
+      color: #888;
+      font-size: 14px;
+    }
+
+    /* 테이블 스타일 */
+    .post-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .post-table tr {
+      border-bottom: 1px solid #eee;
+    }
+
+    .post-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .post-table td {
+      padding: 8px 4px;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 12px;
+    }
+
+    /* 컬럼 설정 */
+    .col-board {
+      width: 65px;
+      text-align: center;
+      color: #1a73e8;
+      font-size: 11px !important;
+      overflow: hidden; 
+      text-overflow: ellipsis;
+    }
+
+    .col-title {
+      width: auto;
+      text-align: left;
+    }
+
+    .col-title a {
+      color: #333;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    
+    .col-title .reply-cnt {
+      color: #ff0000;
+      font-size: 11px;
+      margin-left: 2px;
+    }
+
+    .col-date {
+      width: 70px;
+      text-align: center;
+      color: #888;
+      font-size: 11px !important;
+    }
+
+    .post-table tr.highlight {
+      background-color: #eef5ff; /* 연한 파란색 하이라이트 */
+    }
+    
+    .post-table tr.highlight .col-title a {
+      font-weight: 600;
+      color: #1a73e8;
+    }
+
+    /* 더보기 버튼 */
+    #pagination {
+      padding: 15px 0 20px 0;
+      border-top: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #fff;
+    }
+
+    #load-more-btn {
+      width: 90%;
+      padding: 10px 0;
+      background-color: #f1f3f4;
+      color: #333;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: background-color 0.2s;
+    }
+
+    #load-more-btn:hover {
+      background-color: #e8eaed;
+    }
+    
+    #load-more-btn:disabled {
+      color: #aaa;
+      background-color: #f8f9fa;
+      cursor: default;
+    }
+
+    /* 유틸리티 */
+    .hidden {
+      display: none !important;
+    }
+
+    .category {
+      color: #999;
+      margin-right: 4px;
+      font-size: 11px;
+      font-weight: normal;
+    }
+
+    #block-btn {
+      margin-left: auto;
+      padding: 4px 8px;
+      border: 1px solid #ffcccc;
+      background: #fff0f0;
+      color: #d32f2f;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    #block-btn:hover {
+      background: #ffe0e0;
+    }
+
+    .end-message {
+      width: 100%;
+      text-align: center;
+      padding: 15px 0;
+      color: #888;
+      font-size: 13px;
+    }
+
+    #board-filter {
+      padding: 4px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: auto;
+      margin-right: 8px;
+    }
+
+    #block-btn {
+      margin-left: 0;
+      padding: 4px 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <div class="header-top">
+      <img id="profile-img" src="icons/icon48.png" alt="Profile">
+      <div id="profile-info">
+        <div id="profile-nickname">User</div>
+        <div id="profile-date"></div>
+      </div>
+      
+      <select id="board-filter">
+        <option value="all">전체</option>
+        <option value="mlbtown">MLB타운</option>
+        <option value="kbotown">한국야구타운</option>
+        <option value="bullpen">BULLPEN</option>
+      </select>
+      
+      <button id="block-btn">차단</button>
+    </div>
+    
+    <div id="tag-stats"></div>
+  </div>
+  
+  <!-- 목록과 페이지네이션이 함께 스크롤되도록 래핑 -->
+  <div id="scroll-container">
+    <div id="post-list"></div>
+    <div id="pagination"></div>
+  </div>
+  
+  <script src="sidepanel.js"></script>
+</body>
+</html>
